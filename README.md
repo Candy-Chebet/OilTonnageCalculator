@@ -76,7 +76,7 @@ RATE_LIMIT_MAX_REQUESTS=100
 ## This shows the prompt when trying to delete a calculation history
 <img width="938" height="398" alt="delete step 1" src="https://github.com/user-attachments/assets/0936b3bf-279b-4875-9835-42e5154cd6eb" />
 
-## This shows successful deletion of a calculation with 1000 volume
+## This shows successful deletion of a calculation with 2500 volume
 <img width="902" height="368" alt="delete success" src="https://github.com/user-attachments/assets/b298a326-d959-4bd9-8896-af12a768aa22" />
 
 
