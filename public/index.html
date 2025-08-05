@@ -18,21 +18,33 @@
 
         // API Helper functions
         async function apiRequest(endpoint, options = {}) {
-            const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-                headers: {
-                    'Content-Type': 'application/json',
-                    ...options.headers
-                },
-                ...options
-            });
+            console.log('🔄 Making API request to:', `${API_BASE_URL}${endpoint}`);
+            console.log('🔄 Request options:', options);
             
-            const data = await response.json();
-            
-            if (!response.ok) {
-                throw new Error(data.message || data.error || 'Request failed');
+            try {
+                const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+                
+                console.log('📡 Response status:', response.status);
+                console.log('📡 Response ok:', response.ok);
+                
+                const data = await response.json();
+                console.log('📦 Response data:', data);
+                
+                if (!response.ok) {
+                    throw new Error(data.message || data.error || 'Request failed');
+                }
+                
+                return data;
+            } catch (error) {
+                console.error('❌ API Request failed:', error);
+                throw error;
             }
-            
-            return data;
         }
 
         function showLoading() {
@@ -46,6 +58,7 @@
         }
 
         function showError(message) {
+            console.error('🚨 Error:', message);
             const errorDiv = document.getElementById('errors');
             errorDiv.innerHTML = `<div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-2">${message}</div>`;
             setTimeout(() => {
@@ -54,6 +67,7 @@
         }
 
         function showSuccess(message) {
+            console.log('✅ Success:', message);
             const errorDiv = document.getElementById('errors');
             errorDiv.innerHTML = `<div class="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded mb-2">${message}</div>`;
             setTimeout(() => {
@@ -68,6 +82,8 @@
             const density = parseFloat(document.getElementById('density').value);
             const temperature = parseFloat(document.getElementById('temperature').value);
             
+            console.log('🧮 Calculating tonnage with:', { volume, density, temperature });
+            
             // Clear previous errors
             document.getElementById('errors').innerHTML = '';
             
@@ -80,6 +96,7 @@
                 });
                 
                 const result = response.data;
+                console.log('✅ Calculation result:', result);
                 
                 // Display result
                 document.getElementById('result').innerHTML = `
@@ -134,6 +151,7 @@
         }
 
         async function loadCalculations() {
+            console.log('📋 Loading calculations...');
             try {
                 const searchTerm = document.getElementById('searchInput').value;
                 const sortOrder = document.getElementById('sortSelect').value;
@@ -146,24 +164,49 @@
                     order: sortOrder
                 });
                 
-                const response = await apiRequest(`/calculations?${params}`);
+                console.log('📋 Request params:', params.toString());
                 
-                calculations = response.data;
+                const response = await apiRequest(`/calculations?${params}`);
+                console.log('📋 Received response:', response);
+                
+                if (!response.success) {
+                    throw new Error(response.message || 'Response indicates failure');
+                }
+                
+                calculations = response.data || [];
                 filteredCalculations = [...calculations];
                 
+                console.log('📋 Calculations loaded:', calculations.length);
+                
                 // Update pagination info
-                totalPages = response.pagination.pages;
-                updatePaginationControls(response.pagination);
+                if (response.pagination) {
+                    totalPages = response.pagination.pages;
+                    updatePaginationControls(response.pagination);
+                    console.log('📋 Pagination:', response.pagination);
+                } else {
+                    console.warn('⚠️ No pagination info in response');
+                }
                 
                 renderHistoryTable();
                 
             } catch (error) {
-                console.error('Error loading calculations:', error);
-                showError('Failed to load calculation history');
+                console.error('❌ Error loading calculations:', error);
+                showError(`Failed to load calculation history: ${error.message}`);
+                
+                // Show empty table on error
+                const tbody = document.getElementById('historyTableBody');
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="7" class="px-6 py-8 text-center text-red-500">
+                            Error loading calculations: ${error.message}
+                        </td>
+                    </tr>
+                `;
             }
         }
 
         function renderHistoryTable() {
+            console.log('🎨 Rendering history table with', filteredCalculations.length, 'items');
             const tbody = document.getElementById('historyTableBody');
             
             if (filteredCalculations.length === 0) {
@@ -178,6 +221,7 @@
             }
             
             tbody.innerHTML = filteredCalculations.map(calc => {
+                console.log('🎨 Rendering calculation:', calc);
                 // Ensure we have a valid date
                 const dateStr = calc.timestamp || calc.created_at;
                 const displayDate = dateStr ? new Date(dateStr).toLocaleString() : 'N/A';
@@ -188,7 +232,7 @@
                             ${displayDate}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            ${calc.volume.toLocaleString()}
+                            ${parseFloat(calc.volume).toLocaleString()}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                             ${calc.density}
@@ -197,10 +241,10 @@
                             ${calc.temperature}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            ${calc.vcf.toFixed(4)}
+                            ${parseFloat(calc.vcf).toFixed(4)}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                            ${calc.tonnage.toFixed(6)}
+                            ${parseFloat(calc.tonnage).toFixed(6)}
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                             <button 
@@ -214,6 +258,8 @@
                     </tr>
                 `;
             }).join('');
+            
+            console.log('🎨 Table rendered successfully');
         }
 
         async function deleteCalculation(id) {
@@ -244,6 +290,7 @@
         }
 
         function updatePaginationControls(pagination) {
+            console.log('📄 Updating pagination:', pagination);
             const paginationDiv = document.getElementById('pagination');
             
             if (pagination.pages <= 1) {
@@ -326,16 +373,26 @@
 
         // Initialize on page load
         window.onload = async function() {
-            await loadCalculations();
+            console.log('🚀 Page loaded, initializing...');
             
-            // Health check
             try {
-                await apiRequest('/health');
-                console.log('Server health check passed');
+                // Health check first
+                console.log('🏥 Performing health check...');
+                const healthResponse = await apiRequest('/health');
+                console.log('🏥 Health check result:', healthResponse);
+                
+                if (healthResponse.success) {
+                    showSuccess('Server connection successful!');
+                } else {
+                    showError('Server health check failed');
+                }
             } catch (error) {
-                console.error('Server health check failed:', error);
-                showError('Server connection failed. Please refresh the page.');
+                console.error('🏥 Health check failed:', error);
+                showError(`Server connection failed: ${error.message}`);
             }
+            
+            // Load calculations
+            await loadCalculations();
         };
     </script>
 </head>

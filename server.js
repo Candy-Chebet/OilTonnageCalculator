@@ -12,6 +12,7 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public')); // Serve static files
 
+
 // Database connection pool
 const pool = new Pool({
   host: process.env.DB_HOST || 'localhost',
@@ -212,8 +213,13 @@ app.post('/api/calculate', validateCalculationInput, async (req, res) => {
 app.get('/api/calculations', async (req, res) => {
   let client;
   try {
+    console.log('=== GET /api/calculations DEBUG START ===');
+    console.log('Query params:', req.query);
+    
     const { page = 1, limit = 50, search = '', sort = 'created_at', order = 'DESC' } = req.query;
     const offset = (page - 1) * limit;
+    
+    console.log('Parsed params:', { page, limit, search, sort, order, offset });
     
     let whereClause = '';
     let queryParams = [];
@@ -227,21 +233,65 @@ app.get('/api/calculations', async (req, res) => {
         to_char(created_at, 'YYYY-MM-DD HH24:MI:SS') LIKE $5`;
       const searchPattern = `%${search}%`;
       queryParams = Array(5).fill(searchPattern);
+      console.log('Search WHERE clause:', whereClause);
+      console.log('Search params:', queryParams);
     }
     
     const validSortColumns = ['created_at', 'volume', 'density', 'temperature', 'tonnage'];
     const sortColumn = validSortColumns.includes(sort) ? sort : 'created_at';
     const sortOrder = order.toUpperCase() === 'ASC' ? 'ASC' : 'DESC';
     
+    console.log('Final sort:', { sortColumn, sortOrder });
+    
+    // Test database connection first
+    console.log('Attempting to connect to database...');
     client = await pool.connect();
+    console.log('Database connection successful');
+    
+    // Test basic query first
+    console.log('Testing basic database query...');
+    const testQuery = await client.query('SELECT NOW() as current_time');
+    console.log('Basic query result:', testQuery.rows[0]);
+    
+    // Check if oil_tonnages table exists
+    console.log('Checking if oil_tonnages table exists...');
+    const tableExists = await client.query(`
+      SELECT EXISTS (
+        SELECT FROM information_schema.tables 
+        WHERE table_schema = 'public' 
+        AND table_name = 'oil_tonnages'
+      );
+    `);
+    console.log('Table exists:', tableExists.rows[0].exists);
+    
+    if (!tableExists.rows[0].exists) {
+      throw new Error('oil_tonnages table does not exist');
+    }
+    
+    // Get table structure
+    console.log('Getting table structure...');
+    const tableStructure = await client.query(`
+      SELECT column_name, data_type 
+      FROM information_schema.columns 
+      WHERE table_name = 'oil_tonnages' 
+      ORDER BY ordinal_position;
+    `);
+    console.log('Table structure:', tableStructure.rows);
     
     // Get total count
+    console.log('Getting total count...');
     const countQuery = whereClause 
       ? `SELECT COUNT(*) as total FROM oil_tonnages ${whereClause}`
       : 'SELECT COUNT(*) as total FROM oil_tonnages';
+    
+    console.log('Count query:', countQuery);
+    console.log('Count params:', queryParams);
+    
     const countResult = await client.query(countQuery, queryParams);
+    console.log('Total count result:', countResult.rows[0]);
     
     // Get paginated results
+    console.log('Getting paginated results...');
     const query = `
       SELECT 
         id, volume, density, temperature, vcf, used_density, used_temperature, 
@@ -251,12 +301,19 @@ app.get('/api/calculations', async (req, res) => {
       ORDER BY ${sortColumn} ${sortOrder}
       LIMIT $${queryParams.length + 1} OFFSET $${queryParams.length + 2}`;
     
+    console.log('Main query:', query);
+    console.log('Main query params:', [...queryParams, parseInt(limit), parseInt(offset)]);
+    
     const calculations = await client.query(
       query,
       [...queryParams, parseInt(limit), parseInt(offset)]
     );
     
-    res.json({
+    console.log('Query executed successfully');
+    console.log('Number of rows returned:', calculations.rows.length);
+    console.log('Sample row (if any):', calculations.rows[0]);
+    
+    const response = {
       success: true,
       data: calculations.rows.map(row => ({
         ...row,
@@ -268,18 +325,37 @@ app.get('/api/calculations', async (req, res) => {
         total: parseInt(countResult.rows[0].total),
         pages: Math.ceil(countResult.rows[0].total / limit)
       }
+    };
+    
+    console.log('Response prepared:', {
+      dataCount: response.data.length,
+      pagination: response.pagination
     });
+    console.log('=== GET /api/calculations DEBUG END ===');
+    
+    res.json(response);
     
   } catch (error) {
-    console.error('Error fetching calculations:', error);
+    console.error('=== ERROR in /api/calculations ===');
+    console.error('Error type:', error.constructor.name);
+    console.error('Error message:', error.message);
+    console.error('Error code:', error.code);
+    console.error('Error stack:', error.stack);
+    console.error('=== END ERROR ===');
+    
     res.status(500).json({ 
       error: 'Failed to fetch calculations',
-      message: error.message 
+      message: error.message,
+      code: error.code || 'UNKNOWN_ERROR'
     });
   } finally {
-    if (client) client.release();
+    if (client) {
+      console.log('Releasing database connection');
+      client.release();
+    }
   }
 });
+
 
 // Delete calculation
 app.delete('/api/calculations/:id', async (req, res) => {
