@@ -1,8 +1,8 @@
 # STEPS
 Backend Framework of choice - NODE JS
 
-For the purpose of the interview, functions are hardcorded into the routes inside the server.
-In a proper situation I would separte the functions into a controller for better layering of the application and reusablity of the code.
+For the purpose of the interview, functions are hardcorded into the routes inside server.js.
+In a proper situation I would separate the functions into a controller module for better layering of the application to make reusablity of the code possible.
 
 ## Step 1: Npm Init to initialize
 ## Step 2: Paste the following into your package.json the npm install to install all dependencies: 
