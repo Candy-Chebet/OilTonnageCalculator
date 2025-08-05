@@ -1,5 +1,7 @@
 # STEPS
 Backend Framework of choice - NODE JS
+For the purpose of the interview, functions are hardcorded into the routes inside the server.
+In a proper situation I would separte the functions into a controller for better layering of the application and reusablity of the code.
 
 ## Step 1: Npm Init to initialize
 ## Step 2: Paste the following into your package.json the npm install to install all dependencies: 
@@ -78,5 +80,8 @@ RATE_LIMIT_MAX_REQUESTS=100
 
 ## This shows successful deletion of a calculation with 2500 volume
 <img width="902" height="368" alt="delete success" src="https://github.com/user-attachments/assets/b298a326-d959-4bd9-8896-af12a768aa22" />
+
+## This shows history cleared successfully
+<img width="940" height="391" alt="clear history" src="https://github.com/user-attachments/assets/56bc1973-7901-49c0-8b7c-73d79972c17c" />
 
 
