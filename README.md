@@ -8,39 +8,71 @@ In a proper situation I would separate the functions into a controller module fo
 ## Step 2: Paste the following into your package.json the npm install to install all dependencies: 
 {
   "name": "edible-oil-tonnage-calculator",
+  
   "version": "1.0.0",
+  
   "description": "Production-ready web application for calculating edible oil tonnage using VCF tables",
+  
   "main": "server.js",
+  
   "scripts": {
+  
     "start": "node server.js",
+    
     "dev": "nodemon server.js",
+    
     "test": "jest",
+
     "lint": "eslint .",
+    
     "setup-db": "node scripts/database.js"
+    
   },
+  
   "keywords": [
+  
     "oil",
+    
     "tonnage",
+    
     "calculator",
+    
     "vcf",
+    
     "volume-correction-factor"
+    
   ],
-  "author": "Your Name",
+  "author": "Candy",
+  
   "license": "MIT",
+  
   "dependencies": {
+  
     "cors": "^2.8.5",
+    
     "dotenv": "^16.3.1",
+    
     "express": "^4.18.2",
+    
     "express-rate-limit": "^7.1.5",
+    
     "helmet": "^7.1.0",
+    
     "joi": "^17.11.0",
+    
     "pg": "^8.16.3",
+    
     "pg-hstore": "^2.3.4",
+    
     "sequelize": "^6.37.7"
+    
   },
   "devDependencies": {
+  
     "eslint": "^8.55.0",
+    
     "jest": "^29.7.0",
+
     "nodemon": "^3.0.2",
     "supertest": "^6.3.3"
   },
