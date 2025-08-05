@@ -67,6 +67,7 @@ In a proper situation I would separate the functions into a controller module fo
     "sequelize": "^6.37.7"
     
   },
+  
   "devDependencies": {
   
     "eslint": "^8.55.0",
@@ -74,11 +75,17 @@ In a proper situation I would separate the functions into a controller module fo
     "jest": "^29.7.0",
 
     "nodemon": "^3.0.2",
+    
     "supertest": "^6.3.3"
+    
   },
+  
   "engines": {
+  
     "node": ">=16.0.0",
+    
     "npm": ">=8.0.0"
+    
   }
 }
 
@@ -102,6 +109,7 @@ DB_NAME= your db name in this case - oil_calculator
 
 ### Rate Limiting (requests per minute)
 RATE_LIMIT_WINDOW_MS=60000
+
 RATE_LIMIT_MAX_REQUESTS=100
 
 
