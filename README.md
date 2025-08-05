@@ -93,8 +93,11 @@ NODE_ENV=production
 
 ### Database Configuration
 DB_HOST= your local db host name
+
 DB_USER= your db user name
+
 DB_PASSWORD=your db password
+
 DB_NAME= your db name in this case - oil_calculator
 
 ### Rate Limiting (requests per minute)
