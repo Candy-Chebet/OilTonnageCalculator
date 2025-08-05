@@ -17,7 +17,7 @@
     "vcf",
     "volume-correction-factor"
   ],
-  "author": "Your Name",
+  "author": "Candy",
   "license": "MIT",
   "dependencies": {
     "cors": "^2.8.5",
