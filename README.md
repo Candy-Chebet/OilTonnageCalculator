@@ -1,5 +1,6 @@
 # STEPS
 Backend Framework of choice - NODE JS
+
 For the purpose of the interview, functions are hardcorded into the routes inside the server.
 In a proper situation I would separte the functions into a controller for better layering of the application and reusablity of the code.
 
